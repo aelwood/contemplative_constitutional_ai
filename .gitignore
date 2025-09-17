@@ -1,0 +1,178 @@
+# Contemplative Constitutional AI - .gitignore
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.conda/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# Machine Learning Models and Data
+models/
+*.bin
+*.safetensors
+*.h5
+*.pt
+*.pth
+*.ckpt
+*.model
+*.pickle
+*.pkl
+
+# Large datasets (keep structure, ignore data)
+data/raw/
+data/processed/
+data/datasets/
+data/cache/
+data/temp/
+data/*.jsonl
+data/*.json
+data/*.csv
+data/*.parquet
+!data/constitutions/  # Keep constitutional principles
+!data/benchmarks/sample/  # Keep small sample datasets
+!data/README.md
+
+# Evaluation results and logs
+results/
+logs/
+wandb/
+tensorboard_logs/
+.tensorboard/
+*.log
+
+# Cache directories
+.cache/
+.huggingface/
+.transformers/
+.datasets/
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.directory
+*.swp
+*.swo
+*~
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.spyderproject
+.spyproject
+.ropeproject
+
+# Configuration files with secrets
+.env.local
+.env.production
+config/secrets.yaml
+config/api_keys.yaml
+*.key
+*.pem
+*.p12
+
+# Temporary files
+tmp/
+temp/
+.tmp/
+.temp/
+
+# System files
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+
+# Testing
+.pytest_cache/
+.tox/
+.nox/
+
+# Documentation builds
+docs/_build/
+site/
+
+# Package files
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Hardware-specific ignores
+# MacBook M2 specific caches
+.mtl_cache/
+.mps_cache/
+
+# AWS/Cloud credentials
+.aws/
+.gcp/
+.azure/
+
+# Large model files (use Git LFS for these)
+*.safetensors.index.json
+pytorch_model-*.bin
+model-*.safetensors
+
+# Keep important empty directories with .gitkeep
+!**/.gitkeep
+
+# Allow specific sample files for testing
+!data/samples/
+!configs/examples/
