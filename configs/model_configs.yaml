@@ -1,0 +1,131 @@
+# Model Configurations for Contemplative Constitutional AI
+
+# Proof of Concept Models
+poc_models:
+  qwen2_0_5b:
+    model_name: "Qwen/Qwen2-0.5B-Instruct"
+    model_size: "0.5B"
+    estimated_memory_gb: 2
+    context_length: 32768
+    recommended_hardware: "MacBook M2"
+    use_case: "PoC validation and rapid iteration"
+    
+  qwen2_1_5b:
+    model_name: "Qwen/Qwen2-1.5B-Instruct"
+    model_size: "1.5B"
+    estimated_memory_gb: 4
+    context_length: 32768
+    recommended_hardware: "MacBook M2 (stretch goal)"
+    use_case: "Enhanced PoC if memory allows"
+
+# Development Models
+development_models:
+  qwen2_5_7b:
+    model_name: "Qwen/Qwen2.5-7B-Instruct"
+    model_size: "7B"
+    estimated_memory_gb: 14
+    context_length: 32768
+    recommended_hardware: "Single A100 40GB"
+    use_case: "Primary development and validation"
+    
+  llama3_1_8b:
+    model_name: "meta-llama/Meta-Llama-3.1-8B-Instruct"
+    model_size: "8B"
+    estimated_memory_gb: 16
+    context_length: 131072
+    recommended_hardware: "Single A100 40GB"
+    use_case: "Alternative model for comparison"
+
+# Production Models
+production_models:
+  qwen2_5_14b:
+    model_name: "Qwen/Qwen2.5-14B-Instruct"
+    model_size: "14B"
+    estimated_memory_gb: 28
+    context_length: 32768
+    recommended_hardware: "2-4 A100 40GB"
+    use_case: "Production deployment"
+    
+  qwen2_5_32b:
+    model_name: "Qwen/Qwen2.5-32B-Instruct"
+    model_size: "32B"
+    estimated_memory_gb: 64
+    context_length: 32768
+    recommended_hardware: "4-8 A100 40GB"
+    use_case: "High-performance production"
+    
+  llama3_1_70b:
+    model_name: "meta-llama/Meta-Llama-3.1-70B-Instruct"
+    model_size: "70B"
+    estimated_memory_gb: 140
+    context_length: 131072
+    recommended_hardware: "8+ A100 40GB"
+    use_case: "Maximum capability research"
+
+# Loading configurations
+loading_configs:
+  # MacBook M2 optimized loading
+  macbook_m2:
+    device_map: "mps"
+    torch_dtype: "float16"
+    low_cpu_mem_usage: true
+    trust_remote_code: true
+    use_safetensors: true
+    
+  # Single GPU loading
+  single_gpu:
+    device_map: "auto"
+    torch_dtype: "float16"
+    low_cpu_mem_usage: true
+    trust_remote_code: true
+    use_safetensors: true
+    
+  # Multi-GPU loading
+  multi_gpu:
+    device_map: "auto"
+    torch_dtype: "bfloat16"
+    low_cpu_mem_usage: true
+    trust_remote_code: true
+    use_safetensors: true
+    load_in_8bit: false
+    load_in_4bit: false
+
+# Quantization options (for memory-constrained environments)
+quantization:
+  # 8-bit quantization
+  int8:
+    load_in_8bit: true
+    llm_int8_threshold: 6.0
+    llm_int8_enable_fp32_cpu_offload: true
+    
+  # 4-bit quantization (most memory efficient)
+  int4:
+    load_in_4bit: true
+    bnb_4bit_compute_dtype: "float16"
+    bnb_4bit_use_double_quant: true
+    bnb_4bit_quant_type: "nf4"
+
+# Generation parameters
+generation_params:
+  # Conservative (deterministic)
+  conservative:
+    do_sample: false
+    temperature: 0.0
+    top_p: 1.0
+    max_new_tokens: 512
+    
+  # Balanced (controlled creativity)
+  balanced:
+    do_sample: true
+    temperature: 0.7
+    top_p: 0.9
+    max_new_tokens: 512
+    repetition_penalty: 1.1
+    
+  # Creative (high diversity)
+  creative:
+    do_sample: true
+    temperature: 0.9
+    top_p: 0.95
+    max_new_tokens: 1024
+    repetition_penalty: 1.2

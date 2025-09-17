@@ -46,8 +46,21 @@ Pipfile.lock
 # poetry
 poetry.lock
 
-# Machine Learning Models and Data
-models/
+# Machine Learning Models and Data (exclude actual model files, not source code)
+# Exclude downloaded/trained model files in models/ directory
+models/*.bin
+models/*.safetensors
+models/*.h5
+models/*.pt
+models/*.pth
+models/*.ckpt
+models/*.model
+models/*.pickle
+models/*.pkl
+models/*/
+!models/.gitkeep
+
+# Exclude model files anywhere in the project
 *.bin
 *.safetensors
 *.h5

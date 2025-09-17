@@ -1,0 +1,128 @@
+# Training Configurations for Contemplative Constitutional AI
+
+# Proof of Concept - MacBook M2 Optimized
+poc_macbook_m2:
+  method: "DPO"
+  model_name: "Qwen/Qwen2-0.5B-Instruct"
+  device: "mps"  # Apple Metal Performance Shaders
+  
+  # Memory optimized settings
+  batch_size: 1
+  gradient_accumulation_steps: 4
+  max_memory_mb: 12000  # Leave 4GB for macOS
+  
+  # Training parameters
+  learning_rate: 1.0e-6
+  epochs: 3
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  
+  # Precision and efficiency
+  fp16: true
+  gradient_checkpointing: true
+  dataloader_num_workers: 1
+  
+  # DPO specific
+  beta: 0.1  # DPO temperature parameter
+  max_length: 512
+  max_prompt_length: 256
+  
+  # Logging and checkpointing
+  logging_steps: 10
+  save_steps: 100
+  eval_steps: 50
+  save_total_limit: 3
+  
+  # Dataset limits for PoC
+  max_preference_pairs: 500
+  max_eval_samples: 100
+
+# Development - Single GPU
+development_gpu:
+  method: "DPO"
+  model_name: "Qwen/Qwen2.5-7B-Instruct"
+  device: "cuda"
+  
+  # Standard GPU settings
+  batch_size: 4
+  gradient_accumulation_steps: 8
+  
+  # Training parameters
+  learning_rate: 1.0e-6
+  epochs: 3
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  
+  # Precision and efficiency
+  fp16: true
+  gradient_checkpointing: true
+  dataloader_num_workers: 4
+  
+  # DPO specific
+  beta: 0.1
+  max_length: 1024
+  max_prompt_length: 512
+  
+  # Logging and checkpointing
+  logging_steps: 25
+  save_steps: 500
+  eval_steps: 250
+  save_total_limit: 5
+  
+  # Dataset for development
+  max_preference_pairs: 10000
+  max_eval_samples: 1000
+
+# Production - Multi-GPU
+production_multi_gpu:
+  method: "DPO"
+  model_name: "Qwen/Qwen2.5-14B-Instruct"
+  device: "cuda"
+  
+  # Distributed settings
+  distributed_training: true
+  num_gpus: 4
+  batch_size: 2  # per GPU
+  gradient_accumulation_steps: 16
+  
+  # Training parameters
+  learning_rate: 5.0e-7  # Lower for larger model
+  epochs: 3
+  warmup_ratio: 0.1
+  weight_decay: 0.01
+  
+  # Precision and efficiency
+  bf16: true  # Better than fp16 for large models
+  gradient_checkpointing: true
+  dataloader_num_workers: 8
+  
+  # DPO specific
+  beta: 0.1
+  max_length: 1024
+  max_prompt_length: 512
+  
+  # Logging and checkpointing
+  logging_steps: 50
+  save_steps: 1000
+  eval_steps: 500
+  save_total_limit: 10
+  
+  # Full dataset
+  max_preference_pairs: 40000
+  max_eval_samples: 2000
+
+# Shared evaluation settings
+evaluation:
+  # AILuminate settings
+  ailuminate_demo_path: "data/benchmarks/ailuminate_demo.csv"
+  ailuminate_batch_size: 1  # Memory conservative
+  
+  # Contemplative evaluation
+  contemplative_scenarios_path: "data/benchmarks/contemplative_scenarios.jsonl"
+  
+  # MT-Bench settings
+  mt_bench_categories: ["writing", "roleplay", "reasoning", "math"]
+  
+  # Safety evaluation
+  jailbreak_prompts_path: "data/benchmarks/jailbreak_prompts.jsonl"
+  safety_evaluation_batch_size: 1
