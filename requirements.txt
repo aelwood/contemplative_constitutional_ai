@@ -3,7 +3,7 @@
 
 # Core ML libraries with Apple Silicon support
 torch>=2.2,<2.6
-torchvision>=0.17,<0.20
+# torchvision>=0.17,<0.20  # Commented out - causes lzma import issues and not needed for text models
 torchaudio>=2.2,<2.6
 
 # Transformers and related libraries

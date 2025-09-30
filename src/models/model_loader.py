@@ -193,9 +193,14 @@ class ModelLoader:
             
             # Load model
             logger.info("Loading model...")
+            # Remove trust_remote_code from loading_config to avoid duplication
+            model_loading_config = loading_config.copy()
+            model_loading_config.pop('trust_remote_code', None)
+            
             model = AutoModelForCausalLM.from_pretrained(
                 model_name,
-                **loading_config
+                trust_remote_code=True,
+                **model_loading_config
             )
             
             # Move to device if needed (for non-auto device mapping)

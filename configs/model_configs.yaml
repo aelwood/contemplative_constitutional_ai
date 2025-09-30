@@ -10,6 +10,15 @@ poc_models:
     recommended_hardware: "MacBook M2"
     use_case: "PoC validation and rapid iteration"
     
+  # Alternative smaller model for testing
+  microsoft_dialoGPT:
+    model_name: "microsoft/DialoGPT-small"
+    model_size: "117M"
+    estimated_memory_gb: 1
+    context_length: 1024
+    recommended_hardware: "Any device"
+    use_case: "Basic testing and validation"
+    
   qwen2_1_5b:
     model_name: "Qwen/Qwen2-1.5B-Instruct"
     model_size: "1.5B"
