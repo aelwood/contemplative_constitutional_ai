@@ -36,6 +36,21 @@ We start with pre-trained models (QWEN, Llama, Mistral) and apply the Constituti
 # Install dependencies for Apple Silicon
 pip install -r requirements.txt
 
+# Generate preference pairs with your constitution
+python scripts/generate_cai_data.py \
+    --constitution contemplative-constitution-1.md \
+    --prompts data/prompts/demo_prompts.jsonl \
+    --model qwen2_0_5b \
+    --output results/demo_preference_pairs.jsonl \
+    --device mps
+
+# Train a LoRA adapter with the generated data
+python scripts/train_dpo.py \
+    --dataset results/demo_preference_pairs.jsonl \
+    --base-model qwen2_0_5b \
+    --output models/qwen-0.5b-custom-constitution \
+    --device mps
+
 # Run contemplative CAI finetuning on QWEN2-0.5B (PoC)
 python src/train_constitutional.py \
     --model Qwen/Qwen2-0.5B-Instruct \

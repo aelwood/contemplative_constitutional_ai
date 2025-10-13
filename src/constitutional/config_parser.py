@@ -78,6 +78,7 @@ class ConstitutionalParser:
     
     def __init__(self):
         self.principles: List[ConstitutionalPrinciple] = []
+        self.meta_guidelines: List[str] = []
     
     def parse_markdown_principles(self, md_path: str) -> List[ConstitutionalPrinciple]:
         """
@@ -91,26 +92,31 @@ class ConstitutionalParser:
         """
         with open(md_path, 'r', encoding='utf-8') as f:
             content = f.read()
-        
+
         # Split content by principle sections (## headers)
-        principle_sections = re.split(r'\n## ([^#\n]+)', content)
-        
-        # Remove the first element (content before first principle)
-        if principle_sections:
-            principle_sections = principle_sections[1:]
-        
+        sections = re.split(r'\n## ([^#\n]+)', content)
+
+        if not sections:
+            return []
+
+        # The first element (index 0) contains any preamble or meta principles
+        preamble = sections[0].strip()
+        self.meta_guidelines = self._extract_guidelines(preamble)
+
         principles = []
-        
-        # Process each principle section
-        for i in range(0, len(principle_sections), 2):
-            if i + 1 < len(principle_sections):
-                principle_name = principle_sections[i].strip()
-                principle_content = principle_sections[i + 1]
-                
-                principle = self._parse_principle_section(principle_name, principle_content)
-                if principle:
-                    principles.append(principle)
-        
+
+        # Remaining elements come in pairs: [name, content, name, content, ...]
+        for i in range(1, len(sections), 2):
+            if i + 1 >= len(sections):
+                break
+
+            principle_name = sections[i].strip()
+            principle_content = sections[i + 1]
+
+            principle = self._parse_principle_section(principle_name, principle_content)
+            if principle:
+                principles.append(principle)
+
         self.principles = principles
         return principles
     
@@ -153,23 +159,30 @@ class ConstitutionalParser:
         if current_section and current_content:
             sections[current_section] = '\n'.join(current_content).strip()
         
-        # Extract required fields
+        # Extract required fields if explicitly defined
         critique_template = sections.get('Critique Template', '').strip()
         revision_guideline = sections.get('Revision Guideline', '').strip()
-        
+
         # Extract example applications
-        example_applications = []
+        example_applications: List[str] = []
         example_content = sections.get('Example Application', '').strip()
         if example_content:
             # Split by bullet points or dashes
             examples = re.split(r'\n[-•*]\s*', example_content)
             example_applications = [ex.strip() for ex in examples if ex.strip()]
-        
-        # Validate required fields
+
+        # If critique/revision templates are missing, synthesize them from guidelines
         if not critique_template or not revision_guideline:
-            print(f"Warning: Principle '{name}' missing required fields")
-            return None
-        
+            guidelines = self._extract_guidelines(content)
+            if not guidelines:
+                print(f"Warning: Principle '{name}' missing structured directives")
+                return None
+
+            critique_template = self._build_default_critique_template(name, guidelines)
+            revision_guideline = self._build_default_revision_guideline(name, guidelines)
+            if not example_applications:
+                example_applications = guidelines
+
         return ConstitutionalPrinciple(
             name=name,
             critique_template=critique_template,
@@ -253,7 +266,7 @@ class ConstitutionalParser:
                 prompts.append(prompt_data)
         
         return prompts
-    
+
     def create_batch_revision_prompts(self, response_critique_pairs: List[Dict[str, str]]) -> List[Dict[str, Any]]:
         """
         Create revision prompts for response-critique pairs.
@@ -283,6 +296,67 @@ class ConstitutionalParser:
         
         return prompts
 
+    def _extract_guidelines(self, content: str) -> List[str]:
+        """Extract guideline-style statements from markdown content."""
+        if not content:
+            return []
+
+        guidelines: List[str] = []
+        for raw_line in content.split('\n'):
+            line = raw_line.strip()
+            if not line:
+                continue
+
+            # Remove leading bullets or numbering (e.g., "-", "*", "E1.", "1.")
+            line = re.sub(r'^[\-\*•\u2022]+\s*', '', line)
+            line = re.sub(r'^[A-Za-z]+\d+\.?\s*', '', line)
+            line = re.sub(r'^\d+\.?\s*', '', line)
+
+            # Remove emphasis markers
+            line = line.replace('**', '').replace('__', '').strip()
+            if not line:
+                continue
+
+            guidelines.append(line)
+
+        return guidelines
+
+    def _build_default_critique_template(self, name: str, guidelines: List[str]) -> str:
+        """Construct a critique template when none is provided explicitly."""
+        lines = [
+            f"Evaluate whether the assistant response aligns with the \"{name}\" directives.",
+        ]
+
+        if self.meta_guidelines:
+            lines.append("Meta-principles to keep in mind:")
+            for meta in self.meta_guidelines:
+                lines.append(f"- {meta}")
+
+        lines.append("Principle-specific directives:")
+        for guideline in guidelines:
+            lines.append(f"- {guideline}")
+
+        lines.append("Explain where the response conforms or deviates from these expectations.")
+        return '\n'.join(lines)
+
+    def _build_default_revision_guideline(self, name: str, guidelines: List[str]) -> str:
+        """Construct a revision guideline when none is provided explicitly."""
+        lines = [
+            f"Revise the response so it embodies the \"{name}\" directives listed below.",
+        ]
+
+        if self.meta_guidelines:
+            lines.append("Also honor the overarching meta-principles:")
+            for meta in self.meta_guidelines:
+                lines.append(f"- {meta}")
+
+        lines.append("Key directives to integrate:")
+        for guideline in guidelines:
+            lines.append(f"- {guideline}")
+
+        lines.append("Address each critique point while maintaining factual accuracy and safety.")
+        return '\n'.join(lines)
+
 
 def load_constitutional_config(config_path: str) -> List[ConstitutionalPrinciple]:
     """
@@ -300,7 +374,12 @@ def load_constitutional_config(config_path: str) -> List[ConstitutionalPrinciple
 
 if __name__ == "__main__":
     # Test the parser with the contemplative principles
-    config_path = Path(__file__).parent.parent.parent / "data" / "constitutions" / "contemplative_principles.md"
+    config_path = (
+        Path(__file__).parent.parent.parent
+        / "data"
+        / "constitutions"
+        / "contemplative-constitution-1.md"
+    )
     
     if config_path.exists():
         print("Testing constitutional config parser...")
