@@ -72,7 +72,10 @@ class CAIPipeline:
         self.constitutional_parser = ConstitutionalParser()
         if constitutional_config_path is None:
             constitutional_config_path = str(
-                Path(__file__).parent.parent.parent / "data" / "constitutions" / "contemplative_principles.md"
+                Path(__file__).parent.parent.parent
+                / "data"
+                / "constitutions"
+                / "contemplative-constitution-1.md"
             )
         
         logger.info(f"Loading constitutional principles from: {constitutional_config_path}")

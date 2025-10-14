@@ -18,7 +18,7 @@ poc_models:
     context_length: 1024
     recommended_hardware: "Any device"
     use_case: "Basic testing and validation"
-    
+
   qwen2_1_5b:
     model_name: "Qwen/Qwen2-1.5B-Instruct"
     model_size: "1.5B"
@@ -26,6 +26,14 @@ poc_models:
     context_length: 32768
     recommended_hardware: "MacBook M2 (stretch goal)"
     use_case: "Enhanced PoC if memory allows"
+
+  qwen3_0_6b_local:
+    model_name: "models/Qwen3-0.6B"
+    model_size: "0.6B"
+    estimated_memory_gb: 2
+    context_length: 32768
+    recommended_hardware: "MacBook M1/M2"
+    use_case: "Local PoC with Qwen3"
 
 # Development Models
 development_models:

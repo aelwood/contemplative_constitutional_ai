@@ -243,10 +243,18 @@ class DPOTrainer_Custom:
     def prepare_training(self) -> None:
         """Prepare training arguments and trainer."""
         logger.info("Preparing training configuration")
-        
+
         # Create output directory
         os.makedirs(self.config.output_dir, exist_ok=True)
-        
+
+        # Disable mixed precision on non-CUDA devices to avoid accelerator errors
+        device_str = str(self.device) if self.device is not None else "cpu"
+        if not device_str.startswith("cuda"):
+            if self.config.fp16:
+                logger.info("Disabling fp16 for device %s", device_str)
+            self.config.fp16 = False
+            self.config.bf16 = False
+
         if TRL_AVAILABLE:
             # Use TRL DPOTrainer
             self._prepare_trl_trainer()
