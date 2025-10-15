@@ -9,14 +9,16 @@ This document outlines the technical design for implementing Constitutional AI f
 
 ### Core Components
 
-1. **Base Model Loader** - Load and configure pre-trained models (QWEN 2B → 7B → larger models)
+1. **Base Model Loader** - Load and configure pre-trained models (QWEN 0.5B → 7B → larger models)
 2. **Constitutional Config Parser** - Load contemplative principles from markdown files
-3. **Data Pipeline Manager** - Integrate AILuminate, Anthropic HH, and custom datasets
-4. **CAI Pipeline** - Generate critiques and revisions using constitutional principles
-5. **Preference Data Creator** - Create training pairs from original/revised responses
-6. **DPO Trainer** - Fine-tune using Direct Preference Optimization
-7. **AILuminate Evaluator** - Primary benchmark for comprehensive safety evaluation
-8. **Scaling Infrastructure** - llm-swarm for distributed generation and training
+3. **AILuminate Loader** - ✅ Load and filter AILuminate dataset (git submodule at `data/benchmarks/ailuminate/`)
+4. **Split Manager** - ✅ Manage persistent train/test splits across experiments
+5. **Data Pipeline Manager** - Integrate AILuminate, Anthropic HH, and custom datasets
+6. **CAI Pipeline** - ✅ Generate critiques and revisions using constitutional principles
+7. **Preference Data Creator** - ✅ Create training pairs from original/revised responses
+8. **DPO Trainer** - ✅ Fine-tune using Direct Preference Optimization
+9. **AILuminate Evaluator** - Primary benchmark for comprehensive safety evaluation
+10. **Scaling Infrastructure** - llm-swarm for distributed generation and training (Phase 2+)
 
 ## Configuration System
 
