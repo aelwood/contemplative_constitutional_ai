@@ -4,23 +4,208 @@
 
 This document outlines the data collection, processing, and management pipeline for the Contemplative Constitutional AI project. Our approach follows the proven methodology from [Hugging Face's Constitutional AI implementation](https://huggingface.co/blog/constitutional_ai) while adapting it for contemplative principles.
 
+**✅ Current Status**: AILuminate integrated as git submodule with train/test split management system.
+
+## Quick Start with AILuminate
+
+```bash
+# 1. Generate preference pairs from AILuminate dataset
+python scripts/generate_cai_data.py \
+    --use-ailuminate \
+    --constitution data/constitutions/contemplative_principles.md \
+    --model qwen2_7b \
+    --max-prompts 100 \
+    --create-split \
+    --output results/ailuminate_pairs.jsonl
+
+# 2. Train with the split configuration
+python scripts/train_dpo.py \
+    --dataset results/ailuminate_pairs.jsonl \
+    --base-model qwen2_7b \
+    --use-split-config \
+    --output models/qwen-7b-contemplative
+```
+
 ## Data Sources
 
-### Primary Dataset Sources
+### Primary Dataset: MLCommons AILuminate Benchmark ✨
 
-1. **MLCommons AILuminate Benchmark**
-   - Source: `https://github.com/mlcommons/ailuminate`
-   - Purpose: Comprehensive AI risk assessment with human-generated hazardous prompts
-   - Size: 24K prompts (12K public practice + 12K private + 1.2K demo)
-   - Hazard categories: 12 categories including violent crimes, hate, privacy violations, specialized advice
-   - Usage: High-quality adversarial prompts for constitutional AI training
-   - Languages: English (primary), French, with Simplified Chinese and Hindi coming in 2025
+**Status**: ✅ **Integrated as git submodule** at `data/benchmarks/ailuminate/`
 
-2. **Anthropic HH-RLHF Dataset**
-   - Source: `https://huggingface.co/datasets/Anthropic/hh-rlhf`
-   - Purpose: Red-teaming prompts that elicit potentially problematic responses
-   - Size: ~160K conversations
-   - Usage: Extract prompts for constitutional AI process
+**Key Details**:
+- **Source**: https://github.com/mlcommons/ailuminate
+- **Purpose**: Comprehensive AI risk assessment with human-generated adversarial prompts
+- **Access**: Demo dataset (1,290 prompts) available in submodule, Practice (12K) requires membership
+- **Format**: CSV with prompt_text, hazard category, persona type, locale
+- **Languages**: English (primary), French, with Simplified Chinese and Hindi coming in 2025
+
+**Available Datasets**:
+1. **Demo Dataset** (FREE, included in submodule)
+   - File: `airr_official_1.0_demo_en_us_prompt_set_release.csv`
+   - Size: 1,290 prompts
+   - Capacity: 1,290 × 4 principles = **5,160 preference pairs**
+   - Coverage: **Sufficient for Phase 0 & 1** ✅
+
+2. **Practice Dataset** (MLCommons membership required)
+   - Size: 12,000 prompts
+   - Capacity: 12,000 × 4 = **48,000 preference pairs**
+   - Coverage: **Phase 2+ production scale**
+
+3. **Official Test Dataset** (Private, for benchmarking)
+   - Size: 12,000 prompts
+   - Access: Contact MLCommons
+
+**Hazard Categories** (14 total):
+
+*Physical Hazards:*
+- `vcr` - Violent Crimes
+- `src` - Sex-Related Crimes  
+- `cse` - Child Sexual Exploitation
+- `ssh` - Suicide & Self-Harm
+- `iwp` - Indiscriminate Weapons (CBRNE)
+
+*Non-Physical Hazards:*
+- `ipv` - Intellectual Property Violations
+- `dfm` - Defamation
+- `ncr` - Non-Violent Crimes
+- `hte` - Hate
+- `prv` - Privacy Violations
+
+*Contextual Hazards:*
+- `spc_ele` - Specialized Advice; elections
+- `spc_fin` - Specialized Advice; financial
+- `spc_hlt` - Specialized Advice; health
+- `sxc_prn` - Sexual Content; pornographic
+
+**Persona Types**:
+- `normal` - Average user sophistication
+- `unskilled` - Less sophisticated user
+- `skilled` - Sophisticated adversarial user
+
+**Usage**:
+```python
+from src.data.ailuminate_loader import AILuminateLoader
+
+# Load and filter dataset
+loader = AILuminateLoader('data/benchmarks/ailuminate/airr_official_1.0_demo_en_us_prompt_set_release.csv')
+
+# Get physical hazards only
+prompts = loader.get_prompts(
+    hazard_categories=['vcr', 'cse', 'ssh'],
+    persona_types=['normal', 'skilled'],
+    n_samples=500
+)
+```
+
+### Secondary Dataset: Anthropic HH-RLHF
+
+**Status**: Available as alternative/supplement for Phase 2+ (see IMPLEMENTATION_PLAN.md)
+
+**Key Details**:
+- **Source**: https://huggingface.co/datasets/Anthropic/hh-rlhf
+- **Purpose**: Red-teaming prompts from original Anthropic Constitutional AI research
+- **Size**: ~160K conversations
+- **Format**: Conversational format with chosen/rejected responses
+- **Use Case**: Supplementary data if >40K preference pairs needed
+
+## Train/Test Split Management
+
+**Status**: ✅ **Implemented** with persistent split configuration system
+
+The project includes a `SplitManager` class that maintains consistent train/test splits across all scripts (data generation, training, evaluation). This ensures reproducibility and prevents data leakage.
+
+### Key Features
+
+- **Persistent Configuration**: Splits are saved to JSON files in `data/splits/`
+- **Reproducible**: Same random seed ensures consistent splits across runs
+- **Metadata Tracking**: Stores dataset info, split ratios, creation time
+- **Cross-Script Compatibility**: Same split used in generation, training, and evaluation
+
+### Creating a Split
+
+```bash
+# Option 1: Create split during data generation
+python scripts/generate_cai_data.py \
+    --use-ailuminate \
+    --constitution data/constitutions/contemplative_principles.md \
+    --model qwen2_7b \
+    --max-prompts 500 \
+    --create-split \
+    --test-size 0.1 \
+    --split-config data/splits/ailuminate_split.json \
+    --output results/ailuminate_pairs.jsonl
+
+# This creates:
+# - data/splits/ailuminate_split.json (split configuration)
+# - results/ailuminate_pairs.jsonl (all preference pairs with prompt_ids)
+```
+
+### Using a Split for Training
+
+```bash
+# Option 1: Automatic train/test filtering
+python scripts/train_dpo.py \
+    --dataset results/ailuminate_pairs.jsonl \
+    --base-model qwen2_7b \
+    --use-split-config \
+    --split-config data/splits/ailuminate_split.json \
+    --output models/qwen-7b-contemplative
+
+# The trainer will automatically:
+# - Load the split configuration
+# - Filter dataset to train samples
+# - Use test samples for evaluation
+```
+
+### Split Configuration Format
+
+```json
+{
+  "version": "1.0",
+  "created_at": "2025-10-15T09:30:00",
+  "random_state": 42,
+  "test_size": 0.1,
+  "n_total": 1290,
+  "n_train": 1161,
+  "n_test": 129,
+  "train_ids": ["airr_practice_1_0_156733", ...],
+  "test_ids": ["airr_practice_1_0_287421", ...],
+  "metadata": {
+    "dataset": "ailuminate",
+    "hazard_categories": ["vcr", "cse", "hte"],
+    "n_prompts": 1290
+  },
+  "split_hash": "a3f2d9e8c1b5..."
+}
+```
+
+### Programmatic Usage
+
+```python
+from src.data.split_manager import SplitManager
+
+# Load existing split
+manager = SplitManager('data/splits/ailuminate_split.json')
+train_ids, test_ids = manager.get_split()
+
+# Check if a prompt is in train/test
+is_train = manager.is_train('airr_practice_1_0_156733')
+
+# Filter a list of items
+items = [{'prompt_id': 'xxx', 'data': ...}, ...]
+train_items = manager.filter_train(items)
+test_items = manager.filter_test(items)
+```
+
+### Benefits
+
+1. **Reproducibility**: Same split across all experiments
+2. **No Data Leakage**: Test set never seen during training
+3. **Easy Tracking**: Know exactly which prompts are in train vs test
+4. **Cross-Experiment Consistency**: Multiple models trained on same split
+5. **Metadata**: Track what filtering was applied (hazard categories, etc.)
+
+## Previous Dataset Sources (For Reference)
 
 3. **OpenAssistant Conversations**
    - Source: `https://huggingface.co/datasets/OpenAssistant/oasst1`
