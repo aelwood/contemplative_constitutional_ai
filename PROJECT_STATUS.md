@@ -214,6 +214,9 @@
 4. ✅ **Successfully trained DPO model** (1 epoch, LoRA adapters, ~20 min on MPS)
 5. ✅ **Created model comparison script** (`scripts/compare_models.py`)
 6. ✅ **Validated observable improvements** in constitutional alignment
+7. ✅ **Built LLM-based evaluation framework** using model wrappers
+8. ✅ **Integrated contemplative, safety, and humanistic evaluation criteria**
+9. ✅ **Tested both rule-based and LLM-based evaluation methods**
 
 **Next Session Goals:**
 1. ⏭️ Install AILuminate dependencies (modelgauge, pandas)

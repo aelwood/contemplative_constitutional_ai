@@ -13,6 +13,8 @@ This document provides a detailed implementation plan for building Contemplative
 - ✅ 12 preference pairs generated with extended constitution
 - ✅ **DPO training completed** - 1 epoch with LoRA adapters (~20 min on MPS)
 - ✅ **Model comparison validated** - Observable improvements in constitutional alignment
+- ✅ **LLM-based evaluation framework** - Comprehensive evaluation using model wrappers
+- ✅ **Contemplative, safety, and humanistic criteria** - Multi-dimensional evaluation
 - ✅ All core components tested and end-to-end pipeline validated
 - ✅ Python environment fixed (lzma support added)
 - ✅ Model comparison script (`scripts/compare_models.py`) working

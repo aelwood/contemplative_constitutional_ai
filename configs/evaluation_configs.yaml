@@ -1,0 +1,104 @@
+# Evaluation Configuration for Contemplative Constitutional AI
+
+# Model configurations for evaluation
+# Note: Local models use existing model_configs.yaml, API models defined here
+models:
+  # API-based models (local models use model_configs.yaml)
+  api_models:
+    claude_3_5_sonnet:
+      model_name: "claude-3-5-sonnet-20241022"
+      model_type: "anthropic"
+      api_key_env: "ANTHROPIC_API_KEY"
+      max_tokens: 1000
+      temperature: 0.7
+      
+    gpt_4o:
+      model_name: "gpt-4o"
+      model_type: "openai"
+      api_key_env: "OPENAI_API_KEY"
+      max_tokens: 1000
+      temperature: 0.7
+      
+    gemini_pro:
+      model_name: "gemini-1.5-pro"
+      model_type: "google"
+      api_key_env: "GOOGLE_API_KEY"
+      max_tokens: 1000
+      temperature: 0.7
+
+# Evaluator model configuration
+evaluator_model:
+  # Use a local model for evaluation (recommended for consistency)
+  local_evaluator: "qwen2_0_5b"  # Use Qwen2-0.5B for evaluation
+  
+  # Or use an API model for evaluation
+  # api_evaluator: "claude_3_5_sonnet"  # Use Claude for evaluation
+
+# Evaluation datasets
+datasets:
+  test_prompts:
+    path: "results/test_contemplative_prompts.jsonl"
+    max_prompts: 10
+    
+  ailuminate_demo:
+    path: "data/benchmarks/ailuminate/airr_official_1.0_demo_en_us_prompt_set_release.csv"
+    max_prompts: 100
+    hazard_categories: ["vcr", "cse", "hte", "ssh", "psh", "mh", "th", "bh", "sh", "ph", "ch", "oh", "dh", "wh"]
+    
+  custom_prompts:
+    path: "data/prompts/custom_evaluation.jsonl"
+    max_prompts: 50
+
+# Evaluation criteria weights
+evaluation_criteria:
+  contemplative_principles:
+    emptiness: 0.25          # Non-absolute, interdependent language
+    non_duality: 0.25       # Multiple perspectives, synthesis
+    mindfulness: 0.25       # Present awareness, uncertainty acknowledgment
+    compassion: 0.25        # Universal care, harm reduction
+    
+  safety_metrics:
+    harmfulness: 0.35       # Lower is better
+    bias_mitigation: 0.25   # Lower is better
+    refusal_clarity: 0.25   # Higher is better
+    uncertainty_ack: 0.15   # Higher is better
+    
+  helpfulness:
+    relevance: 0.4          # Response addresses the prompt
+    completeness: 0.3       # Response is complete and actionable
+    clarity: 0.3           # Response is clear and understandable
+    
+  # LLM-based evaluation settings
+  llm_evaluation:
+    enabled: true           # Enable LLM-based evaluation
+    model: "gpt-4o"         # OpenAI model for evaluation
+    temperature: 0.1        # Low temperature for consistent evaluations
+    max_retries: 3          # Number of retries for failed evaluations
+    timeout: 30             # Timeout in seconds for API calls
+    
+  # Humanistic criteria (used with LLM evaluation)
+  humanistic_criteria:
+    wisdom_depth: 0.4       # Depth of wisdom and philosophical understanding
+    empathetic_tone: 0.3    # Degree of empathy and compassion
+    constructive_guidance: 0.3  # Quality of constructive guidance
+
+# Output configuration
+output:
+  results_dir: "results/evaluations"
+  save_responses: true
+  save_metrics: true
+  format: "json"  # json, csv, yaml
+  
+# Evaluation settings
+evaluation:
+  max_new_tokens: 200
+  temperature: 0.7
+  top_p: 0.9
+  num_samples: 1
+  batch_size: 1
+  
+# Comparison settings
+comparison:
+  baseline_model: "qwen2_0_5b"
+  finetuned_model: "qwen2_5_7b"
+  metrics_to_compare: ["contemplative", "safety", "helpfulness"]
