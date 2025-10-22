@@ -221,14 +221,23 @@
 **Next Session Goals:**
 1. ⏭️ Install AILuminate dependencies (modelgauge, pandas)
 2. ⏭️ Implement AILuminateLoader class
-3. ⏭️ Decide: Local 7B with quantization OR cloud GPU setup
-4. ⏭️ Generate 100 test preference pairs using AILuminate prompts
-5. ⏭️ Validate data quality manually (check constitutional violations)
-6. ⏭️ Scale to 500+ pairs and run production training experiment
+3. ⏭️ **Setup AWS SageMaker for 7B model training and evaluation**
+4. ⏭️ **Configure appropriate SageMaker instance for 7B model training**
+5. ⏭️ Generate 100 test preference pairs using AILuminate prompts
+6. ⏭️ Validate data quality manually (check constitutional violations)
+7. ⏭️ Scale to 500+ pairs and run production training experiment on SageMaker
+
+**AWS SageMaker Infrastructure Planning:**
+- **Recommended Instance**: ml.g5.4xlarge (1x A10G, 24GB VRAM) for 7B model training
+- **Alternative Options**: ml.g5.8xlarge, ml.p3.2xlarge, ml.p3.8xlarge
+- **Training Configuration**: 4-bit quantization, batch size 2, gradient accumulation 4
+- **Estimated Cost**: ~$3-5/hour for ml.g5.4xlarge during training
+- **Setup Required**: AWS CLI, SageMaker execution role, S3 bucket for data storage
 
 **See**: 
 - `docs/AILUMINATE_INTEGRATION.md` for detailed integration plan
 - `data/benchmarks/ailuminate/` for the dataset (submodule)
+- `IMPLEMENTATION_PLAN.md` for detailed AWS SageMaker setup instructions
 
 **Success Criteria for Next Milestone:**
 - [ ] 500+ preference pairs with verified quality

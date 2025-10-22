@@ -730,11 +730,63 @@ CONTEMPLATIVE_EDGE_CASES = [
 
 ### Immediate Actions (This Session)
 1. ✅ Update documentation (this file and PROJECT_STATUS.md)
-2. ⏭️ Decide: Local 7B with quantization OR cloud GPU setup
-3. ⏭️ Get adversarial dataset (Anthropic HH-RLHF or create custom)
-4. ⏭️ Generate 100-500 quality preference pairs
-5. ⏭️ Manual validation of data quality
-6. ⏭️ Run first real training experiment
+2. ⏭️ **Setup AWS SageMaker for 7B model training and evaluation**
+3. ⏭️ **Configure appropriate SageMaker instance for 7B model training**
+4. ⏭️ Get adversarial dataset (AILuminate integration)
+5. ⏭️ Generate 100-500 quality preference pairs
+6. ⏭️ Manual validation of data quality
+7. ⏭️ Run first real training experiment on SageMaker
+
+### AWS SageMaker Setup for 7B Model Training
+
+**Recommended SageMaker Instance Types for 7B Models:**
+- **ml.g5.2xlarge** (1x A10G, 24GB VRAM) - Minimum for 7B with quantization
+- **ml.g5.4xlarge** (1x A10G, 24GB VRAM) - Better performance for 7B
+- **ml.g5.8xlarge** (1x A10G, 24GB VRAM) - Optimal for 7B training
+- **ml.p3.2xlarge** (1x V100, 16GB VRAM) - Alternative with V100
+- **ml.p3.8xlarge** (4x V100, 16GB VRAM each) - Multi-GPU for faster training
+
+**Setup Steps:**
+```bash
+# 1. Install AWS CLI and configure credentials
+aws configure
+
+# 2. Create SageMaker execution role
+aws iam create-role --role-name SageMakerExecutionRole --assume-role-policy-document file://trust-policy.json
+
+# 3. Attach necessary policies
+aws iam attach-role-policy --role-name SageMakerExecutionRole --policy-arn arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+
+# 4. Create SageMaker notebook instance
+aws sagemaker create-notebook-instance \
+    --notebook-instance-name contemplative-ai-7b \
+    --instance-type ml.g5.4xlarge \
+    --role-arn arn:aws:iam::ACCOUNT:role/SageMakerExecutionRole
+
+# 5. Upload project to S3
+aws s3 sync . s3://contemplative-ai-bucket/ --exclude "*.git*" --exclude "*.venv*"
+```
+
+**Training Configuration for 7B Model:**
+```yaml
+# configs/sagemaker_training_config.yaml
+training:
+  instance_type: "ml.g5.4xlarge"
+  instance_count: 1
+  volume_size: 100  # GB
+  max_runtime: 86400  # 24 hours
+  
+model:
+  base_model: "Qwen/Qwen2.5-7B-Instruct"
+  quantization: "4bit"  # Use 4-bit quantization for memory efficiency
+  
+training_params:
+  per_device_batch_size: 2
+  gradient_accumulation_steps: 4
+  learning_rate: 1e-6
+  num_epochs: 3
+  max_memory_gb: 20
+```
 
 ### Command Examples
 
@@ -759,7 +811,44 @@ python scripts/train_dpo.py \
     --quantization 8bit
 ```
 
-**Option B: Cloud GPU (Recommended)**
+**Option B: AWS SageMaker (Recommended for Production)**
+```bash
+# 1. Setup SageMaker environment
+aws sagemaker create-notebook-instance \
+    --notebook-instance-name contemplative-ai-7b \
+    --instance-type ml.g5.4xlarge \
+    --role-arn arn:aws:iam::ACCOUNT:role/SageMakerExecutionRole
+
+# 2. Generate with full 7B model on SageMaker
+python scripts/generate_cai_data.py \
+    --model qwen2_7b \
+    --prompts data/datasets/ailuminate_prompts.jsonl \
+    --constitution data/constitutions/contemplative-constitution-extended.md \
+    --output results/preference_pairs_7b_sagemaker.jsonl \
+    --device cuda \
+    --max-prompts 500
+
+# 3. Train with DPO on SageMaker
+python scripts/train_dpo.py \
+    --base-model Qwen/Qwen2.5-7B-Instruct \
+    --dataset results/preference_pairs_7b_sagemaker.jsonl \
+    --output models/qwen-7b-contemplative-sagemaker \
+    --device cuda \
+    --batch-size 4 \
+    --gradient-accumulation-steps 4 \
+    --learning-rate 1e-6 \
+    --num-epochs 3
+
+# 4. Evaluate on SageMaker
+python scripts/evaluate_contemplative.py \
+    --baseline-model qwen2_0_5b \
+    --finetuned-model models/qwen-7b-contemplative-sagemaker \
+    --dataset test_prompts \
+    --max-prompts 10 \
+    --verbose
+```
+
+**Option C: EC2 with A100 (Alternative)**
 ```bash
 # Set up EC2 instance with A100
 # Generate with full 7B model
