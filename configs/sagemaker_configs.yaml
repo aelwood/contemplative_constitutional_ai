@@ -2,19 +2,19 @@
 
 # S3 Configuration
 s3:
-  # Update this with your actual S3 bucket name
-  bucket: "your-bucket-contemplative-ai"
+  # Team bucket with agents-research prefix
+  bucket: "aily-infrastructure-prod-rl-bucket"
   
-  # S3 paths for different components
+  # S3 paths for different components (with agents-research- prefix)
   paths:
-    data: "data"
-    constitutions: "data/constitutions"
-    benchmarks: "data/benchmarks/ailuminate"
-    splits: "data/splits"
-    models: "models"
-    results: "results"
-    preference_pairs: "results/preference_pairs"
-    evaluations: "results/evaluations"
+    data: "agents-research-contemplative-cai/data"
+    constitutions: "agents-research-contemplative-cai/data/constitutions"
+    benchmarks: "agents-research-contemplative-cai/data/benchmarks/ailuminate"
+    splits: "agents-research-contemplative-cai/data/splits"
+    models: "agents-research-contemplative-cai/models"
+    results: "agents-research-contemplative-cai/results"
+    preference_pairs: "agents-research-contemplative-cai/results/preference_pairs"
+    evaluations: "agents-research-contemplative-cai/results/evaluations"
   
   # Auto-sync settings
   auto_sync:
