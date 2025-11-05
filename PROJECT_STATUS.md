@@ -9,21 +9,27 @@
 4. **IMPLEMENTATION_PLAN.md** - Phased development plan with critical and nice-to-have steps
 5. **HARDWARE_REQUIREMENTS.md** - MacBook M2 → Cloud GPU scaling specifications
 6. **README.md** - Project overview with quick start commands
+7. **docs/SAGEMAKER_SETUP.md** - Complete SageMaker setup and usage guide
 
 ### 🏗️ **Core Infrastructure (100% Complete)**
 1. ✅ **Project Structure** - Complete directory tree with Python packages
-2. ✅ **requirements.txt** - Apple Silicon optimized dependencies
+2. ✅ **requirements.txt** - Apple Silicon optimized dependencies + AWS/SageMaker support
 3. ✅ **Configuration System**:
    - `configs/training_configs.yaml` - MacBook M2 + GPU training parameters
    - `configs/model_configs.yaml` - Model specifications (0.5B → 32B)
+   - `configs/sagemaker_configs.yaml` - SageMaker-specific settings (NEW)
 4. ✅ **Constitutional Framework**:
    - `data/constitutions/contemplative_principles.md` - 4 core principles with critique/revision templates
 5. ✅ **Model Loading System**:
-   - `src/models/model_loader.py` - MPS-optimized loading with fallbacks
-   - Automatic device detection (MPS/CUDA/CPU)
+   - `src/models/model_loader.py` - MPS/CUDA-optimized loading with SageMaker support
+   - Automatic device detection (MPS/CUDA/CPU) with cloud environment prioritization
    - Memory management and quantization support
 6. ✅ **Testing Infrastructure**:
    - `scripts/smoke_test.py` - Comprehensive environment validation (6/6 tests passing)
+7. ✅ **SageMaker Integration** (NEW):
+   - `src/utils/sagemaker_utils.py` - S3 sync, device detection, path management
+   - `notebooks/` - Full suite of Jupyter notebooks for SageMaker workflows
+   - Automatic S3 syncing for persistence across sessions
 
 ### 🎯 **Constitutional AI Pipeline (Fully Implemented)**
 
@@ -121,12 +127,16 @@
 - [ ] Validate critique/revision quality improves significantly
 - [ ] Re-generate dataset with larger model
 
-### **3. Cloud/AWS Infrastructure Setup** 🔴 **PRIORITY 3**
+### **3. Cloud/AWS Infrastructure Setup** ✅ **COMPLETED** 🎉
 **Why**: Essential for real training and production deployment
-- [ ] Configure AWS EC2 instances with A100 GPUs
-- [ ] Set up training scripts for distributed training
-- [ ] Establish data pipeline to/from cloud storage
-- [ ] Cost estimation and budget planning
+- [x] ✅ **SageMaker notebooks configured** with complete workflow
+- [x] ✅ **S3 integration** for persistent storage and data syncing
+- [x] ✅ **Interactive notebooks** for data generation, training, evaluation
+- [x] ✅ **Documentation** with setup guide and best practices
+- [x] ✅ **Device detection** optimized for cloud GPU environments
+- [x] ✅ **Cost optimization** recommendations and instance selection guide
+- [ ] Launch SageMaker instance and run first experiment
+- [ ] Test complete pipeline with 7B model on GPU
 
 ### **4. Generate Production Dataset** 🔴 **PRIORITY 4**
 **Why**: 12 pairs insufficient for meaningful training
@@ -196,12 +206,13 @@
 |-----------|--------|---------|-------------|
 | Infrastructure | ✅ Complete | High | None |
 | CAI Pipeline | ✅ Complete | High | None |
+| **SageMaker Integration** | **✅ Complete** | **High** | **Launch instance** |
 | **Dataset** | **✅ AILuminate submodule** | **High** | **Implement loader** |
-| Model Scale | ⚠️ 0.5B | Low (sufficient for PoC) | Upgrade to 7B+ for quality |
+| Model Scale | ⚠️ 0.5B | Low (sufficient for PoC) | Upgrade to 7B+ on SageMaker |
 | Preference Pairs | ✅ 12 pairs (demo validated) | Good | Generate 500+ from AILuminate |
-| Training | ✅ PoC complete | Good | Scale to 500+ pairs |
+| Training | ✅ PoC complete | Good | Scale to 500+ pairs on SageMaker |
 | Evaluation | ✅ Qualitative | Good | Quantitative metrics needed |
-| Cloud Setup | 📋 Not started | N/A | Configure AWS |
+| Cloud Setup | ✅ SageMaker ready | High | Create S3 bucket, launch instance |
 
 **Major Update**: AILuminate dataset (1,290 prompts = 5,160 potential pairs) now available! ✅
 
@@ -217,27 +228,38 @@
 7. ✅ **Built LLM-based evaluation framework** using model wrappers
 8. ✅ **Integrated contemplative, safety, and humanistic evaluation criteria**
 9. ✅ **Tested both rule-based and LLM-based evaluation methods**
+10. ✅ **Complete SageMaker Integration** (NEW):
+    - Created `src/utils/sagemaker_utils.py` with S3 helpers
+    - Created `configs/sagemaker_configs.yaml` for cloud settings
+    - Built 6 Jupyter notebooks for full workflow
+    - Updated model loader for cloud environment detection
+    - Added boto3 and sagemaker to requirements
+    - Wrote comprehensive setup guide in `docs/SAGEMAKER_SETUP.md`
+    - Created notebook README with usage instructions
 
 **Next Session Goals:**
-1. ⏭️ Install AILuminate dependencies (modelgauge, pandas)
-2. ⏭️ Implement AILuminateLoader class
-3. ⏭️ **Setup AWS SageMaker for 7B model training and evaluation**
-4. ⏭️ **Configure appropriate SageMaker instance for 7B model training**
-5. ⏭️ Generate 100 test preference pairs using AILuminate prompts
-6. ⏭️ Validate data quality manually (check constitutional violations)
-7. ⏭️ Scale to 500+ pairs and run production training experiment on SageMaker
+1. ⏭️ **Launch SageMaker notebook instance** (ml.g5.2xlarge recommended)
+2. ⏭️ **Run setup notebooks** to validate SageMaker environment
+3. ⏭️ **Execute quickstart notebook** for end-to-end validation (5 prompts, 1 epoch)
+4. ⏭️ Install AILuminate dependencies (modelgauge, pandas)
+5. ⏭️ Implement AILuminateLoader class
+6. ⏭️ Generate 100-500 preference pairs using AILuminate prompts with 7B model
+7. ⏭️ Validate data quality manually (check constitutional violations)
+8. ⏭️ Run full-scale training experiment on SageMaker (500+ pairs, 7B model, 3 epochs)
 
-**AWS SageMaker Infrastructure Planning:**
-- **Recommended Instance**: ml.g5.4xlarge (1x A10G, 24GB VRAM) for 7B model training
-- **Alternative Options**: ml.g5.8xlarge, ml.p3.2xlarge, ml.p3.8xlarge
-- **Training Configuration**: 4-bit quantization, batch size 2, gradient accumulation 4
-- **Estimated Cost**: ~$3-5/hour for ml.g5.4xlarge during training
-- **Setup Required**: AWS CLI, SageMaker execution role, S3 bucket for data storage
+**AWS SageMaker Infrastructure - Ready to Launch:**
+- **Recommended Instance**: ml.g5.2xlarge (1x A10G, 24GB VRAM, $1.21/hr) ← **Start here**
+- **Alternative Options**: ml.g4dn.xlarge ($0.74/hr), ml.g5.4xlarge ($2.03/hr), ml.p3.2xlarge ($3.83/hr)
+- **Training Configuration**: Configurable via notebooks (batch size, gradient accumulation, quantization)
+- **Setup Status**: ✅ All code and notebooks ready, just need to create S3 bucket and launch instance
+- **Documentation**: Complete setup guide in `docs/SAGEMAKER_SETUP.md`
 
 **See**: 
-- `docs/AILUMINATE_INTEGRATION.md` for detailed integration plan
+- `docs/SAGEMAKER_SETUP.md` for complete SageMaker setup guide ← **START HERE**
+- `notebooks/README.md` for notebook usage instructions
+- `docs/AILUMINATE_INTEGRATION.md` for dataset integration plan
 - `data/benchmarks/ailuminate/` for the dataset (submodule)
-- `IMPLEMENTATION_PLAN.md` for detailed AWS SageMaker setup instructions
+- `IMPLEMENTATION_PLAN.md` for phased development plan
 
 **Success Criteria for Next Milestone:**
 - [ ] 500+ preference pairs with verified quality

@@ -1,0 +1,186 @@
+# SageMaker-specific configuration for Contemplative Constitutional AI
+
+# S3 Configuration
+s3:
+  # Update this with your actual S3 bucket name
+  bucket: "your-bucket-contemplative-ai"
+  
+  # S3 paths for different components
+  paths:
+    data: "data"
+    constitutions: "data/constitutions"
+    benchmarks: "data/benchmarks/ailuminate"
+    splits: "data/splits"
+    models: "models"
+    results: "results"
+    preference_pairs: "results/preference_pairs"
+    evaluations: "results/evaluations"
+  
+  # Auto-sync settings
+  auto_sync:
+    enabled: true
+    sync_on_save: true  # Automatically sync outputs to S3
+    sync_interval_minutes: 30  # Background sync interval
+
+# SageMaker Instance Configurations
+instances:
+  # Small GPU for 0.5B-1.5B models
+  small:
+    instance_type: "ml.g4dn.xlarge"
+    gpu: "T4"
+    gpu_memory_gb: 16
+    cost_per_hour: 0.74
+    recommended_models:
+      - "qwen2_0_5b"
+      - "qwen2_1_5b"
+  
+  # Medium GPU for 7B models
+  medium:
+    instance_type: "ml.g5.2xlarge"
+    gpu: "A10G"
+    gpu_memory_gb: 24
+    cost_per_hour: 1.21
+    recommended_models:
+      - "qwen2_7b"
+      - "qwen2.5_7b"
+  
+  # Large GPU for 7B-14B models
+  large:
+    instance_type: "ml.g5.4xlarge"
+    gpu: "A10G"
+    gpu_memory_gb: 24
+    cost_per_hour: 2.03
+    recommended_models:
+      - "qwen2_7b"
+      - "qwen2.5_7b"
+      - "qwen2.5_14b"
+  
+  # V100 for larger models
+  v100:
+    instance_type: "ml.p3.2xlarge"
+    gpu: "V100"
+    gpu_memory_gb: 16
+    cost_per_hour: 3.83
+    recommended_models:
+      - "qwen2_7b"
+      - "qwen2.5_7b"
+      - "qwen2.5_14b"
+
+# Device Settings
+device:
+  default: "cuda"
+  fallback: "cpu"
+  # Enable automatic mixed precision for memory efficiency
+  use_amp: true
+  # CUDA settings
+  cuda:
+    benchmark: true  # Enable cuDNN benchmark for performance
+    deterministic: false  # Set to true for reproducibility
+
+# Memory Optimization
+memory:
+  # Memory limits per instance type (GB)
+  limits:
+    ml.g4dn.xlarge: 12
+    ml.g5.2xlarge: 20
+    ml.g5.4xlarge: 20
+    ml.p3.2xlarge: 14
+  
+  # Enable gradient checkpointing to save memory
+  gradient_checkpointing: true
+  
+  # Clear cache periodically during training
+  clear_cache_interval: 100
+
+# Training Configuration for SageMaker
+training:
+  # Default training parameters optimized for SageMaker
+  default_params:
+    per_device_batch_size: 2
+    gradient_accumulation_steps: 8
+    learning_rate: 1e-6
+    max_grad_norm: 1.0
+    warmup_ratio: 0.03
+    logging_steps: 10
+    save_steps: 500
+    eval_steps: 500
+    
+  # Checkpointing
+  checkpointing:
+    save_total_limit: 3
+    save_strategy: "steps"
+    sync_to_s3: true  # Auto-sync checkpoints to S3
+  
+  # Early stopping
+  early_stopping:
+    enabled: false
+    patience: 3
+    threshold: 0.01
+
+# Data Generation Configuration
+data_generation:
+  # Batch processing for large datasets
+  batch_size: 50
+  max_workers: 4
+  
+  # Save intermediate results
+  save_intermediate: true
+  intermediate_sync_to_s3: true
+
+# Evaluation Configuration
+evaluation:
+  # Batch size for evaluation
+  batch_size: 8
+  
+  # Save detailed results
+  save_per_sample: true
+  save_aggregated: true
+  
+  # Sync results to S3
+  sync_results: true
+
+# Monitoring and Logging
+monitoring:
+  # Enable CloudWatch logging
+  cloudwatch:
+    enabled: true
+    log_group: "/aws/sagemaker/NotebookInstances"
+    
+  # Resource monitoring
+  track_gpu_memory: true
+  track_cpu_memory: true
+  log_interval_seconds: 60
+  
+  # Progress tracking
+  use_tqdm: true
+  show_progress_bars: true
+
+# Cost Optimization
+cost_optimization:
+  # Auto-stop idle instance (set in SageMaker console)
+  idle_timeout_minutes: 60
+  
+  # Use spot instances for training jobs (when using SageMaker Training)
+  use_spot_instances: false
+  max_wait_time_minutes: 120
+  
+  # Cleanup old checkpoints
+  cleanup_old_checkpoints: true
+  keep_last_n_checkpoints: 3
+
+# Notebook-specific settings
+notebooks:
+  # Kernel to use
+  kernel: "conda_pytorch_p310"
+  
+  # Auto-reload modules for development
+  autoreload: true
+  
+  # Display settings
+  max_display_rows: 20
+  plot_backend: "inline"
+  
+  # Output formatting
+  pretty_print: true
+  color_output: true
+

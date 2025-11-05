@@ -55,6 +55,10 @@ anthropic>=0.8,<1.0          # Claude models
 openai>=1.0,<2.0            # GPT models
 google-generativeai>=0.3,<1.0  # Gemini models
 
+# AWS and SageMaker support
+boto3>=1.28,<2.0            # AWS SDK for S3 and other services
+sagemaker>=2.0,<3.0         # SageMaker SDK for managed training
+
 # Note: For production GPU environments, you may need:
 # - Different torch versions with CUDA support
 # - Additional distributed training libraries

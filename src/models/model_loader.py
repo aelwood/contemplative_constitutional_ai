@@ -1,8 +1,10 @@
 """
 Model loading utilities for Contemplative Constitutional AI.
 Optimized for Apple Silicon (MPS) and CUDA devices.
+Supports SageMaker and cloud environments.
 """
 
+import os
 import torch
 import yaml
 import logging
@@ -38,10 +40,28 @@ class ModelLoader:
     def detect_device(self) -> str:
         """
         Detect the best available device for model loading.
+        Prioritizes CUDA in cloud/SageMaker environments, MPS for local Apple Silicon.
         
         Returns:
             Device string: 'mps', 'cuda', or 'cpu'
         """
+        # Check if we're in a cloud/SageMaker environment
+        is_cloud = (
+            os.environ.get('SM_TRAINING_ENV') is not None or
+            os.path.exists('/opt/ml') or
+            'SageMaker' in os.getcwd()
+        )
+        
+        # In cloud environments, prioritize CUDA
+        if is_cloud:
+            if torch.cuda.is_available():
+                logger.info(f"CUDA detected in SageMaker with {torch.cuda.device_count()} GPU(s)")
+                return 'cuda'
+            else:
+                logger.info("No GPU acceleration available in SageMaker, using CPU")
+                return 'cpu'
+        
+        # For local development, prefer MPS (Apple Silicon) over CUDA
         if torch.backends.mps.is_available():
             logger.info("MPS (Apple Silicon) detected and available")
             return 'mps'
